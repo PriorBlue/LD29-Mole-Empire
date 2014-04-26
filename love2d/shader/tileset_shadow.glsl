@@ -3,7 +3,7 @@ extern float grid = 16.0;
 extern vec2 size = vec2(256.0, 256.0);
 extern float time = 0.0;
 extern vec2 lightPosition = vec2(128.0, 128.0);
-extern vec4 lightColorRange = vec4(1.0, 0.9, 0.8, 400.0);
+extern vec4 lightColorRange = vec4(1.0, 0.9, 0.8, 250.0);
 extern vec2 screenSize = vec2(512.0, 512.0);
 
 vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 pixel_coords) {
@@ -70,7 +70,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 pixel_coords) {
 			if(collAlpha == 1.0) {
 				return vec4(lightColorRange.rgb * att * att, 1.0);
 			} else {
-				bright = vec4((lightColorRange.rgb * vec3( max(curColor.r, 0.1), max(curColor.g, 0.2), max(curColor.b, 0.5)) * att * att) * collAlpha, 1.0);
+				bright = vec4((lightColorRange.rgb * vec3( max(curColor.r, 0.1), max(curColor.g, 0.2), max(curColor.b, 0.3)) * att * att) * collAlpha, 1.0);
 			}
 		} else {
 			return vec4(lightColorRange.rgb * att * att, 1.0);

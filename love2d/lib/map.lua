@@ -78,7 +78,7 @@ function love.game.newLayer(width, height, tileset)
 	o.curEvent = 0
 	o.shadow = false
 
-	o.draw = function(x, y, r, sx, sy, ...)
+	o.draw = function(x, y, r, sw, sh, ...)
 		G.setColor(255, 255, 255)
 		if o.shadow then
 			o.shader2:send("lightPosition", {o.lightX, o.lightY})
@@ -91,7 +91,7 @@ function love.game.newLayer(width, height, tileset)
 			G.setShader(o.shader)
 			G.setBlendMode("alpha")
 		end
-		G.draw(o.canvas, x or 0, y or 0, r or 0, (sx or 1) * 16, (sy or 1) * 16, ...)
+		G.draw(o.canvas, x or 0, y or 0, r or 0, (sw or 1) * 16, (sh or 1) * 16, ...)
 		G.setBlendMode("alpha")
 		G.setShader()
 	end

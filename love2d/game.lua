@@ -71,10 +71,16 @@ function love.game.newGame()
 
 	o.onKeyHit = function(key, code)
 		if o.state == STATE_GAME then
-			if key == "i" then
+			if key == "f1" then
+				o.world.shadows = not o.world.shadows
+			elseif key == "i" then
 				o.world.save("map")
 			elseif key == "l" then
 				o.world.load("map")
+			elseif key == "left" then
+				o.world.tileID = o.world.tileID - 1
+			elseif key == "right" then
+				o.world.tileID = o.world.tileID + 1
 			end
 		end
 	end
@@ -82,9 +88,9 @@ function love.game.newGame()
 	o.onMouseHit = function(x, y, key)
 		if o.state == STATE_GAME then
 			if key == "wd" then
-				o.world.tileID = o.world.tileID + 1
+				o.world.zoomOut()
 			elseif key == "wu" then
-				o.world.tileID = o.world.tileID - 1
+				o.world.zoomIn()
 			elseif key == "l" then
 				o.world.drawTile = true
 			end

@@ -4,6 +4,7 @@ function love.load()
 	G = love.graphics
 	W = love.window
 	S = love.sound
+	T = love.timer
 	FS = love.filesystem
 
 	FONT_SMALL = G.newFont(12)
