@@ -26,13 +26,13 @@ function love.draw()
 end
 
 function love.keypressed(key, code)
-
+	ludGame.onKeyHit(key, code)
 end
 
 function love.mousepressed(x, y, key)
-
+	ludGame.onMouseHit(x, y, key)
 end
 
 function love.mousereleased(x, y, key)
-
+	ludGame.onMouseUp(x, y, key)
 end
