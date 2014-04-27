@@ -7,13 +7,18 @@ function love.load()
 	T = love.timer
 	FS = love.filesystem
 
-	FONT_SMALL = G.newFont(12)
-	FONT_NORMAL = G.newFont(16)
-	FONT_BIG = G.newFont(24)
+	G.setDefaultFilter("nearest", "nearest", 0)
+	G.setDefaultFilter("nearest", "nearest", 0)
+
+	FONT_SMALL = G.newFont("font/alagard.ttf", 16)
+	FONT_NORMAL = G.newFont("font/alagard.ttf", 24)
+	FONT_BIG = G.newFont("font/alagard.ttf", 32)
+	FONT_TITLE = G.newFont("font/alagard.ttf", 48)
+	FONT_TITLE2 = G.newFont("font/alagard.ttf", 128)
 	G.setFont(FONT_NORMAL)
 
 	ludGame = love.game.newGame()
-	ludGame.setVersion("0.0.1")
+	ludGame.setVersion("0.3.1")
 	ludGame.init()
 end
 
@@ -22,7 +27,7 @@ function love.update(dt)
 end
 
 function love.draw()
-	love.window.setTitle("[LD29]Game (FPS:" .. love.timer.getFPS() .. ")")
+	love.window.setTitle("[LD29]Mole Empire (FPS:" .. love.timer.getFPS() .. ")")
 	ludGame.draw()
 end
 

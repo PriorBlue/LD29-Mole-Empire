@@ -36,7 +36,7 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 pixel_coords) {
 	}
 
 	float collAlpha = 1.0;
-	if(tex.a == 0.0 || tex2.a == 0.0) {
+	if(tex2.a < 1.0) {
 		if(dist < lightColorRange.a) {
 			vec4 curPoint;
 			vec3 curColor;
@@ -55,16 +55,9 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 pixel_coords) {
 					)
 				);
 
-				if(curPoint.a > 0.0 && curPoint2.a > 0.0) {
-					if(curPoint.a == 1.0 && curPoint2.a == 1.0) {
-						collAlpha = 0.0;
-						break;
-					} else {
-						if(collAlpha > 1 - curPoint.a) {
-							collAlpha = 1 - curPoint.a;
-							curColor = curPoint.rgb;
-						}
-					}
+				if(curPoint2.a == 1.0) {
+					collAlpha = 0.0;
+					break;
 				}
 			}
 			if(collAlpha == 1.0) {
