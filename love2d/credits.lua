@@ -20,7 +20,7 @@ function love.game.newCredits(parent)
 			"[Code, Graphics, Sound]\nMarcus Ihde (PriorBlue)\n\n" ..
 			"[Engine]\nLove2d (Lua Script)\n(love2d.org)\n\n" ..
 			"[Used Tools]\nPaint.NET (Graphics)\nmusagi, cgMusic (Music)\nsfxr (Sound)\n\n" ..
-			"[Foreign Resources]\nAlagard.ttf (Font)\n\n" ..
+			"[Foreign Resources]\nAlagard.ttf (Font)\nTSerial.lua (load/save tables)\n\n" ..
 			"[Source]\ngithub.com/PriorBlue/LD29-Mole-Empire\n\n" ..
 			"[License]\nMIT",
 			W.getWidth() * 0.5 - 256, 48, 512, "center"

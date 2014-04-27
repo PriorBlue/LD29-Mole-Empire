@@ -1,14 +1,16 @@
+require "lib/TSerial"
 require "game"
 
 function love.load()
 	G = love.graphics
 	W = love.window
+	A = love.audio
 	S = love.sound
 	T = love.timer
 	FS = love.filesystem
 
 	G.setDefaultFilter("nearest", "nearest", 0)
-	G.setDefaultFilter("nearest", "nearest", 0)
+	G.setLineStyle("rough")
 
 	FONT_SMALL = G.newFont("font/alagard.ttf", 16)
 	FONT_NORMAL = G.newFont("font/alagard.ttf", 24)
@@ -41,4 +43,8 @@ end
 
 function love.mousereleased(x, y, key)
 	ludGame.onMouseUp(x, y, key)
+end
+
+math.length = function(x1, y1, x2, y2)
+	return ((x1 - x2) ^ 2 + (y1 - y2) ^ 2) ^ 0.5
 end

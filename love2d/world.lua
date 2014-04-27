@@ -1,5 +1,7 @@
 require "lib/map"
 require "lib/player"
+require "lib/enemy_manager"
+require "lib/item_manager"
 require "lib/hud"
 
 function love.game.newWorld(parent)
@@ -11,6 +13,8 @@ function love.game.newWorld(parent)
 	o.tileset = love.game.newTileset("gfx/tileset.png", 8)
 	o.map = love.game.newMap(o.mapWidth, o.mapHeight)
 	o.player = love.game.newPlayer(o, 128, 128)
+	o.enemyManager = love.game.newEnemyManager(o)
+	o.itemManager = love.game.newItemManager(o)
 	o.layer = {}
 	o.layer[1] = o.map.addLayer(o.tileset)
 	o.layer[2] = o.map.addLayer(o.tileset)
@@ -20,6 +24,8 @@ function love.game.newWorld(parent)
 	o.tileID = 0
 	o.drawTile = false
 	o.shadows = true
+	o.timer = 0
+	o.timerDeath = 0
 
 	o.zoom = 2
 	o.dragX = 0
@@ -30,20 +36,35 @@ function love.game.newWorld(parent)
 
 	o.init = function()
 		--o.layer[1].clear(11, 0, 0)
+		o.enemyManager.init()
+		o.itemManager.init()
 		o.zoom = 2
 		o.load("map")
-		o.player.x = 128
-		o.player.y = 128
+		o.player.init()
 		o.hud.maxHealth = o.player.maxHealth
 		o.hud.health = o.player.health
 		o.hud.maxAttack = o.player.maxAttack
 		o.hud.attack = o.player.attack
 		o.shadows = true
+		o.timer = 0
+		o.timerDeath = 0
 	end
 
 	o.update = function(dt)
+		o.timer = o.timer + dt
+
+		o.enemyManager.update(dt)
+		o.itemManager.update(dt)
+
 		if o.parent.state == STATE_GAME then
-			o.player.update(dt)
+			if o.player.health > 0 then
+				o.player.update(dt)
+			else
+				o.timerDeath = o.timerDeath + dt
+			end
+
+			o.hud.maxHealth = o.player.maxHealth
+			o.hud.health = math.max(0, o.player.health)
 			o.hud.attack = o.player.attack
 			-- center player
 			o.offsetX = -o.player.x * o.zoom + W.getWidth() * 0.5
@@ -243,18 +264,34 @@ function love.game.newWorld(parent)
 		G.setColor(255, 255, 255)
 		o.layer[1].draw(o.offsetX, o.offsetY, 0, o.zoom , o.zoom)
 		o.layer[2].draw(o.offsetX, o.offsetY,0, o.zoom, o.zoom)
+
+		o.enemyManager.drawBottom(o.offsetX, o.offsetY, 0, o.zoom, o.zoom)
+
 		if o.parent.state == STATE_GAME then
 			o.player.draw(o.offsetX, o.offsetY, 0, o.zoom, o.zoom)
 		end
+
+		o.enemyManager.drawTop(o.offsetX, o.offsetY, 0, o.zoom, o.zoom)
+
+		o.itemManager.draw(o.offsetX, o.offsetY, 0, o.zoom, o.zoom)
+
+		if o.parent.state == STATE_GAME then
+			o.player.drawAttack(o.offsetX, o.offsetY, 0, o.zoom, o.zoom)
+		end
+
 		if o.parent.state == STATE_GAME or o.shadows then
 			o.layer[3].draw(o.offsetX, o.offsetY, 0, o.zoom, o.zoom)
 		end
 		
 		if o.parent.state == STATE_EDITOR then
-			G.draw(o.tileset.img, W.getWidth() - o.tileset.img:getWidth())
+			-- draw tileset
+			G.setColor(255, 255, 255, 31)
+			G.rectangle("fill", W.getWidth() - o.tileset.img:getWidth() - 16, 0, o.tileset.img:getWidth() + 16, o.tileset.img:getHeight() + 16)
+			G.setColor(255, 255, 255)
+			G.draw(o.tileset.img, W.getWidth() - o.tileset.img:getWidth() - 8, 8)
 			-- draw tile selector
 			G.setColor(255, 255, 0)
-			G.rectangle("line", W.getWidth() - o.tileset.img:getWidth() + (o.tileID % o.tileset.grid) * o.tileset.tileWidth, math.floor(o.tileID / o.tileset.grid) * o.tileset.tileHeight, o.tileset.tileWidth, o.tileset.tileHeight)
+			G.rectangle("line", W.getWidth() - o.tileset.img:getWidth() + (o.tileID % o.tileset.grid) * o.tileset.tileWidth - 8, math.floor(o.tileID / o.tileset.grid) * o.tileset.tileHeight + 8, o.tileset.tileWidth, o.tileset.tileHeight)
 			-- draw mouse marker
 			G.setColor(255, 0, 0)
 			G.rectangle("line", math.floor((love.mouse.getX() - o.offsetX) / (o.tileset.tileWidth * o.zoom)) * o.tileset.tileWidth * o.zoom + o.offsetX, math.floor((love.mouse.getY() - o.offsetY) / (o.tileset.tileHeight * o.zoom)) * o.tileset.tileHeight * o.zoom + o.offsetY, o.tileset.tileWidth * o.zoom, o.tileset.tileHeight * o.zoom)
@@ -262,18 +299,40 @@ function love.game.newWorld(parent)
 
 		if o.parent.state == STATE_GAME then
 			o.hud.draw()
+
+			if o.timer < 10 then
+				G.setColor(191, 255, 0, (o.timer % 10) * 25)
+				G.printf("[QUICK HELP]\nWASD: Move\nSPACE: Attack\nE: Interact", 0, 8, W.getWidth(), "center")
+			elseif o.timer < 20 then
+				G.setColor(255, 191, 0, (o.timer % 10) * 25)
+				G.printf("Kill all enemies, to become the leader of the underworld!", 0, 8, W.getWidth(), "center")
+			end
+
+			if o.timerDeath > 0 then
+				G.setColor(0, 0, 0, math.min(o.timerDeath * 100, 191))
+				G.rectangle("fill", 0, 0, W.getWidth(), W.getHeight())
+				G.setColor(255, 63, 0, math.min(o.timerDeath * 100, 255))
+				G.setFont(FONT_NORMAL)
+				G.printf("You are death!", 0, W.getHeight() * 0.5, W.getWidth(), "center")
+			end
 		elseif o.parent.state == STATE_EDITOR then
+			G.setColor(0, 0, 0, 191)
+			G.rectangle("fill", 0, W.getHeight() - 64, W.getWidth(), 64)
 			G.setColor(255, 255, 255)
-			G.printf("[F1]Load [F2]Save [F3]Shadow on/off [Left/Right]Select Tile [Mouse-Scroll] Select Tile [Q/E] Zoom", 0, W.getHeight() - 24, W.getWidth(), "center")
+			G.printf("[F1]Load [F2]Save [F3]Shadow on/off [Left/Right]Select Tile [Mouse-Scroll] Select Tile\n\n[Q/E] Zoom [1-5] Add enemies [6-0] Add items [Delete] Remove enemies/items", 0, W.getHeight() - 56, W.getWidth(), "center")
 		end
 	end
 
 	o.load = function(path)
 		o.map.load(path)
+		o.enemyManager.load(path)
+		o.itemManager.load(path)
 	end
 
 	o.save = function(path)
 		o.map.save(path)
+		o.enemyManager.save(path)
+		o.itemManager.save(path)
 	end
 
 	o.zoomIn = function(zoom)

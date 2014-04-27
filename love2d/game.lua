@@ -67,6 +67,7 @@ function love.game.newGame()
 			o.sound[2]:play()
 		elseif o.state == STATE_EDITOR then
 			o.world.init()
+			o.world.enemyManager.ai = false
 			o.world.shadows = false
 		end
 	end
@@ -79,6 +80,9 @@ function love.game.newGame()
 		if o.state == STATE_GAME then
 
 		elseif o.state == STATE_EDITOR then
+			local tx = (love.mouse.getX() - o.world.offsetX) / o.world.zoom
+			local ty = (love.mouse.getY() - o.world.offsetY) / o.world.zoom
+			
 			if key == "f3" then
 				o.world.shadows = not o.world.shadows
 			elseif key == "f2" then
@@ -89,6 +93,49 @@ function love.game.newGame()
 				o.world.zoomIn()
 			elseif key == "e" then
 				o.world.zoomOut()
+			elseif key == "1" then
+				if #o.world.enemyManager.enemyTypes >= 1 then
+					o.world.enemyManager.newEnemy(1, tx, ty)
+				end
+			elseif key == "2" then
+				if #o.world.enemyManager.enemyTypes >= 2 then
+					o.world.enemyManager.newEnemy(2, tx, ty)
+				end
+			elseif key == "3" then
+				if #o.world.enemyManager.enemyTypes >= 3 then
+					o.world.enemyManager.newEnemy(3, tx, ty)
+				end
+			elseif key == "4" then
+				if #o.world.enemyManager.enemyTypes >= 4 then
+					o.world.enemyManager.newEnemy(4, tx, ty)
+				end
+			elseif key == "5" then
+				if #o.world.enemyManager.enemyTypes >= 5 then
+					o.world.enemyManager.newEnemy(5, tx, ty)
+				end
+			elseif key == "6" then
+				if #o.world.itemManager.itemTypes >= 1 then
+					o.world.itemManager.newItem(1, tx, ty)
+				end
+			elseif key == "7" then
+				if #o.world.itemManager.itemTypes >= 2 then
+					o.world.itemManager.newItem(2, tx, ty)
+				end
+			elseif key == "8" then
+				if #o.world.itemManager.itemTypes >= 3 then
+					o.world.itemManager.newItem(3, tx, ty)
+				end
+			elseif key == "9" then
+				if #o.world.itemManager.itemTypes >= 4 then
+					o.world.itemManager.newItem(4, tx, ty)
+				end
+			elseif key == "0" then
+				if #o.world.itemManager.itemTypes >= 5 then
+					o.world.itemManager.newItem(5, tx, ty)
+				end
+			elseif key == "delete" then
+				o.world.enemyManager.deleteEnemy(tx, ty)
+				o.world.itemManager.deleteItem(tx, ty)
 			end
 		end
 	end
