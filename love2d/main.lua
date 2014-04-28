@@ -20,7 +20,7 @@ function love.load()
 	G.setFont(FONT_NORMAL)
 
 	ludGame = love.game.newGame()
-	ludGame.setVersion("0.3.1")
+	ludGame.setVersion("0.1.0")
 	ludGame.init()
 end
 

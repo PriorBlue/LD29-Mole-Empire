@@ -36,17 +36,19 @@ function love.game.newEnemyManager(parent)
 				if not e.death then
 					local len = math.length(e.x, e.y, p.x, p.y)
 
-					if len <= 64 then
-						e.target = p
-						if len <= 16 and p.attacked <= 0 then
-							p.health = p.health - (e.strength + math.random(0, e.luck))
-							p.attacked = 1.0
-							o.soundAttack[e.type]:play()
-						end
-					else
-						e.target = nil
-						if math.length(e.x, e.y, e.x2, e.y2) <= 4 then
-							e.moveTo(e.x2 + math.random(-64, 64), e.y2 + math.random(-64, 64))
+					if len <= 256 then
+						if len <= 64 then
+							e.target = p
+							if len <= 16 and p.attacked <= 0 then
+								p.health = p.health - (e.strength + math.random(0, e.luck))
+								p.attacked = 1.0
+								o.soundAttack[e.type]:play()
+							end
+						else
+							e.target = nil
+							if math.length(e.x, e.y, e.x2, e.y2) <= 4 then
+								e.moveTo(e.x2 + math.random(-64, 64), e.y2 + math.random(-64, 64))
+							end
 						end
 					end
 				end
@@ -128,20 +130,20 @@ function love.game.newEnemyManager(parent)
 					e.health = e.health - damage
 					if e.health <= 0 then
 						e.death = true
-						local r = math.random(0, 10)
-						if r < 4 then
+						local r = math.random(0, 20)
+						if r < 7 then
 							o.parent.itemManager.newItem(1, e.x + math.random(-2, 2), e.y + math.random(-2, 2))
 						end
-						if r == 7 then
+						if r == 17 then
 							o.parent.itemManager.newItem(2, e.x + math.random(-2, 2), e.y + math.random(-2, 2))
 						end
-						if r == 8 then
+						if r == 18 then
 							o.parent.itemManager.newItem(3, e.x + math.random(-2, 2), e.y + math.random(-2, 2))
 						end
-						if r == 9 then
+						if r == 19 then
 							o.parent.itemManager.newItem(4, e.x + math.random(-2, 2), e.y + math.random(-2, 2))
 						end
-						if r == 10 then
+						if r == 20 then
 							o.parent.itemManager.newItem(5, e.x + math.random(-2, 2), e.y + math.random(-2, 2))
 						end
 					end

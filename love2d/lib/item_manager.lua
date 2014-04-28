@@ -4,11 +4,13 @@ function love.game.newItemManager(parent)
 	local o = {}
 
 	o.parent = parent
+	o.id = 0
 	o.quadItems = G.newQuad(0, 0, 8, 8, 64, 64)
 	o.imgItems = G.newImage("gfx/items.png")
 	o.sound = love.audio.newSource("sfx/item.wav", "static")
 	o.itemTypes = nil
 	o.items = nil
+	o.imgBatch = G.newSpriteBatch(o.imgItems, 1000)
 
 	o.init = function()
 		o.itemTypes = Tserial.unpack(love.filesystem.read("data/item.ini"))
@@ -29,6 +31,7 @@ function love.game.newItemManager(parent)
 				end
 				if o.itemTypes[itm.type].maxHealth then
 					p.maxHealth = p.maxHealth + o.itemTypes[itm.type].maxHealth
+					p.addHealth(o.itemTypes[itm.type].maxHealth)
 				end
 				if o.itemTypes[itm.type].speed then
 					p.speed = p.speed + o.itemTypes[itm.type].speed
@@ -43,6 +46,7 @@ function love.game.newItemManager(parent)
 				o.sound:play()
 
 				table.remove(o.items, i)
+				--o.imgBatch:set(o.id, 0, 0)
 				break
 			end
 
@@ -54,6 +58,9 @@ function love.game.newItemManager(parent)
 		for i = 1, #o.items do
 			o.items[i].draw(x, y, r, sw, sh, ...)
 		end
+		--G.setColor(255, 255, 255)
+		--G.setBlendMode("alpha")
+		--G.draw(o.imgBatch, x, y, 0, sw, sh)
 	end
 
 	o.load = function(path)
@@ -89,6 +96,8 @@ function love.game.newItemManager(parent)
 		itm.speed = o.itemTypes[type].speed or 0
 
 		o.items[#o.items + 1] = itm
+		o.quadItems:setViewport(itm.imageID * 8, 0, 8, 8)
+		--o.id = o.imgBatch:add(o.quadItems, x, y)
 
 		return o.items[#o.items]
 	end
@@ -99,6 +108,7 @@ function love.game.newItemManager(parent)
 
 			if math.length(itm.x, itm.y, x, y) < 16 then
 				table.remove(o.items, i)
+				o.imgBatch:set(o.id, 0, 0)
 				break
 			end
 		end
