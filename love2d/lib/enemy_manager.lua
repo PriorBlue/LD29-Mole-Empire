@@ -36,21 +36,27 @@ function love.game.newEnemyManager(parent)
 				if not e.death then
 					local len = math.length(e.x, e.y, p.x, p.y)
 
-					if len <= 256 then
+					--if len <= 256 then
 						if len <= 64 then
 							e.target = p
 							if len <= 16 and p.attacked <= 0 then
-								p.health = p.health - (e.strength + math.random(0, e.luck))
+								local dmg = (e.strength + math.random(0, e.luck))
+								p.health = p.health - dmg
 								p.attacked = 1.0
 								o.soundAttack[e.type]:play()
+								o.parent.hitManager.addHit(p.x, p.y - 16, dmg, 255, 63, 0)
 							end
 						else
 							e.target = nil
 							if math.length(e.x, e.y, e.x2, e.y2) <= 4 then
-								e.moveTo(e.x2 + math.random(-64, 64), e.y2 + math.random(-64, 64))
+								--if math.random(0, 1) == 1 then
+									e.moveTo(e.x2 + math.random(-64, 64), e.y2 + math.random(-64, 64))
+								--else
+									--e.moveTo(e.x2 + math.random(-64, 64), e.y2)
+								--end
 							end
 						end
-					end
+					--end
 				end
 				e.update(dt)
 			end
@@ -103,6 +109,7 @@ function love.game.newEnemyManager(parent)
 		e.strength = o.enemyTypes[type].strength
 		e.luck = o.enemyTypes[type].luck
 		e.speed = o.enemyTypes[type].speed
+		e.drop = o.enemyTypes[type].drop
 
 		o.enemies[#o.enemies + 1] = e
 
@@ -121,6 +128,8 @@ function love.game.newEnemyManager(parent)
 	end
 
 	o.attackEnemy = function(x, y, damage)
+		local atkEnemy = nil
+
 		for i = 1, #o.enemies do
 			local e = o.enemies[i]
 
@@ -130,8 +139,8 @@ function love.game.newEnemyManager(parent)
 					e.health = e.health - damage
 					if e.health <= 0 then
 						e.death = true
-						local r = math.random(0, 20)
-						if r < 7 then
+						local r = math.random(e.drop, 20)
+						if r < 15 and r % 5 == 0 then
 							o.parent.itemManager.newItem(1, e.x + math.random(-2, 2), e.y + math.random(-2, 2))
 						end
 						if r == 17 then
@@ -147,9 +156,13 @@ function love.game.newEnemyManager(parent)
 							o.parent.itemManager.newItem(5, e.x + math.random(-2, 2), e.y + math.random(-2, 2))
 						end
 					end
+
+					atkEnemy = e
 				end
 			end
 		end
+
+		return atkEnemy
 	end
 
 	return o

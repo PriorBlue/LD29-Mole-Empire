@@ -17,6 +17,7 @@ function love.game.newEnemy(parent, type, x, y)
 	o.strength = strength or 1
 	o.luck = luck or 0
 	o.speed = speed or 25
+	o.drop = drop or 0
 
 	o.type = type or 1
 	o.x = x or 0
@@ -50,16 +51,16 @@ function love.game.newEnemy(parent, type, x, y)
 				end
 			end
 
-			if math.length(o.x, o.y, o.x2, o.y2) > 1 then
-				local tx = o.x / 16
-				local ty = o.y / 16
+			local tx = o.x / 16 + 1
+			local ty = o.y / 16 + 1
 
-				if o.y > o.y2 and o.parent.parent.layer[2].getTile(tx, ty - 0.5) == 0 then
+			if math.abs(o.y - o.y2) > 1 then
+				if o.y > o.y2 and o.parent.parent.map.isCollision(tx, ty - 0.5) == false then
 					o.y = o.y - dt * o.speed
 					o.directionAnimation = 0
 					o.moving = true
 					o.direction = math.pi
-				elseif o.y < o.y2 and o.parent.parent.layer[2].getTile(tx, ty + 0.5) == 0 then
+				elseif o.y < o.y2 and o.parent.parent.map.isCollision(tx, ty + 0.5) == false then
 					o.y = o.y + dt * o.speed
 					o.directionAnimation = 1
 					o.moving = true
@@ -67,13 +68,17 @@ function love.game.newEnemy(parent, type, x, y)
 				else
 					o.y2 = o.y
 				end
+			else
+				o.y2 = o.y
+			end
 
-				if o.x > o.x2 and o.parent.parent.layer[2].getTile(tx - 0.25, ty) == 0 then
+			if math.abs(o.x - o.x2) > 1 then
+				if o.x > o.x2 and o.parent.parent.map.isCollision(tx - 0.25, ty) == false then
 					o.x = o.x - dt * o.speed
 					o.directionAnimation = 2
 					o.moving = true
 					o.direction = math.pi * 1.5
-				elseif o.x < o.x2 and o.parent.parent.layer[2].getTile(tx + 0.25, ty) == 0 then
+				elseif o.x < o.x2 and o.parent.parent.map.isCollision(tx + 0.25, ty) == false then
 					o.x = o.x + dt * o.speed
 					o.directionAnimation = 3
 					o.moving = true
@@ -81,6 +86,8 @@ function love.game.newEnemy(parent, type, x, y)
 				else
 					o.x2 = o.x
 				end
+			else
+				o.x2 = o.x
 			end
 		end
 
@@ -119,7 +126,7 @@ function love.game.newEnemy(parent, type, x, y)
 	end
 
 	o.moveTo = function(x, y)
-		if o.parent.parent.layer[2].getTile(x / 16, y / 16) == 0 then
+		if o.parent.parent.map.isCollision(x / 16, y / 16) == false then
 			o.x2 = x
 			o.y2 = y
 		end

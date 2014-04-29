@@ -1,4 +1,8 @@
+love.graphics.setDefaultFilter("nearest", "nearest", 0)
+love.graphics.setLineStyle("rough")
+
 require "lib/TSerial"
+require "lib/postshader"
 require "game"
 
 function love.load()
@@ -9,9 +13,6 @@ function love.load()
 	T = love.timer
 	FS = love.filesystem
 
-	G.setDefaultFilter("nearest", "nearest", 0)
-	G.setLineStyle("rough")
-
 	FONT_SMALL = G.newFont("font/alagard.ttf", 16)
 	FONT_NORMAL = G.newFont("font/alagard.ttf", 24)
 	FONT_BIG = G.newFont("font/alagard.ttf", 32)
@@ -20,7 +21,7 @@ function love.load()
 	G.setFont(FONT_NORMAL)
 
 	ludGame = love.game.newGame()
-	ludGame.setVersion("0.1.0")
+	ludGame.setVersion("0.2.0")
 	ludGame.init()
 end
 
@@ -29,8 +30,13 @@ function love.update(dt)
 end
 
 function love.draw()
-	love.window.setTitle("[LD29]Mole Empire (FPS:" .. love.timer.getFPS() .. ")")
+	W.setTitle("[LD29]Mole Empire (FPS:" .. love.timer.getFPS() .. ")")
+	love.postshader.setBuffer("render")
+	G.clear(0, 0, 0)
 	ludGame.draw()
+	love.postshader.addEffect("bloom")
+	--love.postshader.addEffect("scanlines")
+	love.postshader.draw()
 end
 
 function love.keypressed(key, code)

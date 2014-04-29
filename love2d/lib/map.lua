@@ -56,9 +56,10 @@ function love.game.newTileset(path, grid)
 	return o
 end
 
-function love.game.newLayer(width, height, tileset)
+function love.game.newLayer(parent, width, height, tileset)
 	local o = {}
 
+	o.parent = parent
 	o.width = width
 	o.height = height
 	o.tileset = tileset
@@ -74,7 +75,7 @@ function love.game.newLayer(width, height, tileset)
 	o.shader2:send("size", {o.width, o.height})
 	o.lightX = 0
 	o.lightY = 0
-	o.coll = {1, 2, 3, 4, 5, 8, 9, 10, 12, 16, 17, 18, 19, 20} --HARDCODE
+	o.coll = {1, 2, 3, 4, 5, 8, 9, 10, 12, 13, 16, 17, 18, 19, 20} --HARDCODE
 	o.curEvent = 0
 	o.shadow = false
 
@@ -84,6 +85,7 @@ function love.game.newLayer(width, height, tileset)
 			o.shader2:send("lightPosition", {o.lightX, o.lightY})
 			o.shader2:send("screenSize", {o.width * o.tileset.tileWidth, o.height * o.tileset.tileHeight})
 			o.shader2:send("time", math.floor(love.timer.getTime() * 5))
+			o.shader2:send("zoom", math.min(1, sw))
 			G.setShader(o.shader2)
 			G.setBlendMode("multiplicative")
 		else
@@ -109,13 +111,16 @@ function love.game.newLayer(width, height, tileset)
 	end
 
 	o.setTile = function(x, y, n, frames, event)
+		local coll = false
 		o.curEvent = event or 0
 		for i = 1, #o.coll do
 			if o.coll[i] == n then
 				o.curEvent = 1
+				coll = true
 				break
 			end
 		end
+		o.parent.setCollision(x, y, coll)
 		G.setPointStyle("rough")
 		G.setColor(math.mod(n, o.tileset.grid), math.floor(n / o.tileset.grid), frames or 0, o.curEvent)
 		G.point(x, y)
@@ -164,26 +169,24 @@ function love.game.newMap(width, height)
 	o.layer = {}
 	o.width = width or 256
 	o.height = height or 256
+	o.collision = {}
+	for i = 1, o.width do
+		o.collision[i] = {}
+		for k = 1, o.height do
+			o.collision[i][k] = false
+		end
+	end
 
-	o.draw = function(x, y, r, sx, sy, ...)
+	o.draw = function(x, y, r, sw, sh, ...)
 		G.setColor(255, 255, 255)
 		for i = 1, #o.layer do
-			if o.layer[i].shadow then
-				o.layer[i].shader2:send("lightPosition", {o.layer[i].lightX, o.layer[i].lightY})
-				o.layer[i].shader2:send("time", math.floor(love.timer.getTime() * 5))
-				G.setShader(o.layer[i].shader2)
-			else
-				G.setShader(o.layer[i].shader)
-				o.layer[i].shader:send("time", math.floor(love.timer.getTime() * 5))
-			end
-
-			G.draw(o.layer[i].canvas, x or 0, y or 0, r or 0, (sx or 1) * 16, (sy or 1) * 16, ...)
+			o.layer[i].draw(x, y, r, sw, sh, ...)
 		end
 		G.setShader()
 	end
 
 	o.addLayer = function(tileset)
-		o.layer[#o.layer + 1] = love.game.newLayer(o.width, o.height, tileset)
+		o.layer[#o.layer + 1] = love.game.newLayer(o, o.width, o.height, tileset)
 
 		return o.layer[#o.layer]
 	end
@@ -194,8 +197,21 @@ function love.game.newMap(width, height)
 		LOVE_LAYER_LAST_CANVAS = G.getCanvas()
 		for i = 1, #o.layer do
 			local img = G.newImage("save/" .. path .. "_" .. i .. ".png")
+
 			G.setCanvas(o.layer[i].canvas)
 			G.draw(img)
+			-- update collision
+			local imgData = img:getData()
+			for k = 1, o.width do
+				for l = 1, o.height do
+					local r, g, b, a = imgData:getPixel(k - 1, l - 1)
+					if a > 0 then
+						o.collision[k][l] = true
+					else
+						o.collision[k][l] = false
+					end
+				end
+			end
 		end
 		G.setCanvas(LOVE_LAYER_LAST_CANVAS)
 		G.setBlendMode("alpha")
@@ -206,6 +222,20 @@ function love.game.newMap(width, height)
 
 		for i = 1, #o.layer do
 			o.layer[i].canvas:getImageData():encode("save/" .. path .. "_" .. i .. ".png")
+		end
+	end
+
+	o.isCollision = function(x, y)
+		if x >= 1 and y >= 1 and x <= o.width and y <= o.height then
+			return o.collision[math.floor(x)][math.floor(y)]
+		else
+			return true
+		end
+	end
+
+	o.setCollision = function(x, y, collision)
+		if x >= 1 and y >= 1 and x <= o.width and y <= o.height then
+			o.collision[math.floor(x)][math.floor(y)] = collision
 		end
 	end
 

@@ -4,13 +4,12 @@ function love.game.newItemManager(parent)
 	local o = {}
 
 	o.parent = parent
-	o.id = 0
 	o.quadItems = G.newQuad(0, 0, 8, 8, 64, 64)
 	o.imgItems = G.newImage("gfx/items.png")
 	o.sound = love.audio.newSource("sfx/item.wav", "static")
 	o.itemTypes = nil
 	o.items = nil
-	o.imgBatch = G.newSpriteBatch(o.imgItems, 1000)
+	o.imgBatch = G.newSpriteBatch(o.imgItems, 1)
 
 	o.init = function()
 		o.itemTypes = Tserial.unpack(love.filesystem.read("data/item.ini"))
@@ -28,25 +27,39 @@ function love.game.newItemManager(parent)
 			if len <= 8 then
 				if o.itemTypes[itm.type].health then
 					p.addHealth(o.itemTypes[itm.type].health)
+					o.parent.hitManager.addHit(p.x, p.y - 16, "HEAL", 0, 255, 0)
 				end
 				if o.itemTypes[itm.type].maxHealth then
 					p.maxHealth = p.maxHealth + o.itemTypes[itm.type].maxHealth
 					p.addHealth(o.itemTypes[itm.type].maxHealth)
+					o.parent.hitManager.addHit(p.x, p.y - 16, "HP+", 63, 255, 0)
 				end
 				if o.itemTypes[itm.type].speed then
 					p.speed = p.speed + o.itemTypes[itm.type].speed
+					o.parent.hitManager.addHit(p.x, p.y - 16, "SPD+", 127, 255, 0)
 				end
 				if o.itemTypes[itm.type].strength then
 					p.strength = p.strength + o.itemTypes[itm.type].strength
+					o.parent.hitManager.addHit(p.x, p.y - 16, "STR+", 255, 63, 0)
 				end
 				if o.itemTypes[itm.type].luck then
 					p.luck = p.luck + o.itemTypes[itm.type].luck
+					o.parent.hitManager.addHit(p.x, p.y - 16, "LUK+", 255, 0, 127)
 				end
 
 				o.sound:play()
 
 				table.remove(o.items, i)
-				--o.imgBatch:set(o.id, 0, 0)
+
+				o.imgBatch:clear()
+				o.imgBatch:setBufferSize(#o.items)
+				o.imgBatch:bind()
+				for k = 1, #o.items do
+					o.quadItems:setViewport(o.items[k].imageID * 8, 0, 8, 8)
+					o.items[k].batchID = o.imgBatch:add(o.quadItems, o.items[k].x, o.items[k].y)
+				end
+				o.imgBatch:unbind()
+
 				break
 			end
 
@@ -55,12 +68,9 @@ function love.game.newItemManager(parent)
 	end
 
 	o.draw = function(x, y, r, sw, sh, ...)
-		for i = 1, #o.items do
-			o.items[i].draw(x, y, r, sw, sh, ...)
-		end
-		--G.setColor(255, 255, 255)
-		--G.setBlendMode("alpha")
-		--G.draw(o.imgBatch, x, y, 0, sw, sh)
+		G.setColor(255, 255, 255)
+		G.setBlendMode("alpha")
+		G.draw(o.imgBatch, x, y, 0, sw, sh)
 	end
 
 	o.load = function(path)
@@ -95,20 +105,29 @@ function love.game.newItemManager(parent)
 		itm.luck = o.itemTypes[type].luck or 0
 		itm.speed = o.itemTypes[type].speed or 0
 
-		o.items[#o.items + 1] = itm
+		o.imgBatch:setBufferSize(#o.items + 1)
 		o.quadItems:setViewport(itm.imageID * 8, 0, 8, 8)
-		--o.id = o.imgBatch:add(o.quadItems, x, y)
+		itm.batchID = o.imgBatch:add(o.quadItems, x, y)
+
+		o.items[#o.items + 1] = itm
 
 		return o.items[#o.items]
 	end
 
 	o.deleteItem = function(x, y)
 		for i = 1, #o.items do
-			local itm = o.items[i]
-
-			if math.length(itm.x, itm.y, x, y) < 16 then
+			if math.length(o.items[i].x, o.items[i].y, x, y) < 16 then
 				table.remove(o.items, i)
-				o.imgBatch:set(o.id, 0, 0)
+
+				o.imgBatch:clear()
+				o.imgBatch:setBufferSize(#o.items)
+				o.imgBatch:bind()
+				for k = 1, #o.items do
+					o.quadItems:setViewport(o.items[k].imageID * 8, 0, 8, 8)
+					o.items[k].batchID = o.imgBatch:add(o.quadItems, o.items[k].x, o.items[k].y)
+				end
+				o.imgBatch:unbind()
+
 				break
 			end
 		end

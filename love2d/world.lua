@@ -2,6 +2,7 @@ require "lib/map"
 require "lib/player"
 require "lib/enemy_manager"
 require "lib/item_manager"
+require "lib/hit_manager"
 require "lib/hud"
 
 function love.game.newWorld(parent)
@@ -11,14 +12,16 @@ function love.game.newWorld(parent)
 	o.mapWidth = 256
 	o.mapHeight = 256
 	o.tileset = love.game.newTileset("gfx/tileset.png", 8)
+	o.tileset_shadow = love.game.newTileset("gfx/tileset_shadow.png", 8)
 	o.map = love.game.newMap(o.mapWidth, o.mapHeight)
 	o.player = love.game.newPlayer(o, 128, 128)
 	o.enemyManager = love.game.newEnemyManager(o)
 	o.itemManager = love.game.newItemManager(o)
+	o.hitManager = love.game.newHitManager(o)
 	o.layer = {}
 	o.layer[1] = o.map.addLayer(o.tileset)
 	o.layer[2] = o.map.addLayer(o.tileset)
-	o.layer[3] = o.map.addLayer(o.tileset)
+	o.layer[3] = o.map.addLayer(o.tileset_shadow)
 	o.layer[3].shadow = true
 	o.hud = love.game.newHud(o, 8, 8)
 	o.tileID = 0
@@ -55,6 +58,7 @@ function love.game.newWorld(parent)
 
 		o.enemyManager.update(dt)
 		o.itemManager.update(dt)
+		o.hitManager.update(dt)
 
 		if o.parent.state == STATE_GAME then
 			if o.player.health > 0 then
@@ -272,8 +276,8 @@ function love.game.newWorld(parent)
 		end
 
 		o.enemyManager.drawTop(o.offsetX, o.offsetY, 0, o.zoom, o.zoom)
-
 		o.itemManager.draw(o.offsetX, o.offsetY, 0, o.zoom, o.zoom)
+		o.hitManager.draw(o.offsetX, o.offsetY, 0, o.zoom, o.zoom)
 
 		if o.parent.state == STATE_GAME then
 			o.player.drawAttack(o.offsetX, o.offsetY, 0, o.zoom, o.zoom)
@@ -298,6 +302,14 @@ function love.game.newWorld(parent)
 		end
 
 		if o.parent.state == STATE_GAME then
+			if ludGame.world.player.attacked > 0.5 then
+				local colorAberration1 = math.sin(love.timer.getTime() * 20.0) * (ludGame.world.player.attacked - 0.5) * 4.0
+				local colorAberration2 = math.cos(love.timer.getTime() * 20.0) * (ludGame.world.player.attacked - 0.5) * 4.0
+
+				love.postshader.addEffect("blur", 2.0, 2.0)
+				love.postshader.addEffect("chromatic", colorAberration1, colorAberration2, colorAberration2, -colorAberration1, colorAberration1, -colorAberration2)
+			end
+
 			o.hud.draw()
 
 			if o.timer < 10 then
@@ -313,13 +325,14 @@ function love.game.newWorld(parent)
 				G.rectangle("fill", 0, 0, W.getWidth(), W.getHeight())
 				G.setColor(255, 63, 0, math.min(o.timerDeath * 100, 255))
 				G.setFont(FONT_NORMAL)
-				G.printf("You are death!", 0, W.getHeight() * 0.5, W.getWidth(), "center")
+				G.printf("You are dead!", 0, W.getHeight() * 0.5, W.getWidth(), "center")
 			end
 		elseif o.parent.state == STATE_EDITOR then
+			G.setFont(FONT_SMALL)
 			G.setColor(0, 0, 0, 191)
 			G.rectangle("fill", 0, W.getHeight() - 64, W.getWidth(), 64)
 			G.setColor(255, 255, 255)
-			G.printf("[F1]Load [F2]Save [F3]Shadow on/off [Left/Right]Select Tile [Mouse-Scroll] Select Tile\n\n[Q/E] Zoom [1-5] Add enemies [6-0] Add items [Delete] Remove enemies/items", 0, W.getHeight() - 56, W.getWidth(), "center")
+			G.printf("[F1]Load [F2]Save [F3]Shadow on/off [Mouse-Scroll] Select Tile\n\n[Q/E] Zoom [1-5] Add enemies [6-0] Add items [Delete] Remove enemies/items", 0, W.getHeight() - 56, W.getWidth(), "center")
 		end
 	end
 

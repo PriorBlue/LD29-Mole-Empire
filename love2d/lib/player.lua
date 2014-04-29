@@ -61,32 +61,37 @@ function love.game.newPlayer(parent, x, y)
 				o.attack = 0
 				o.directionAttack = o.direction
 				o.soundAttack[math.random(1, 4)]:play()
-				o.parent.enemyManager.attackEnemy(o.x + math.sin(o.directionAttack) * 12, (o.y - 4) + math.cos(o.directionAttack) * 16, o.strength + math.random(0, o.luck))
+				local dmg = o.strength + math.random(0, o.luck)
+				local e = o.parent.enemyManager.attackEnemy(o.x + math.sin(o.directionAttack) * 12, (o.y - 4) + math.cos(o.directionAttack) * 16, dmg)
+
+				if e then
+					o.parent.hitManager.addHit(e.x, e.y - 16, dmg, 255, 127, 0)
+				end
 			end
 
 			o.moving = false
 			
-			local tx = o.x / 16
-			local ty = o.y / 16
+			local tx = o.x / 16 + 1
+			local ty = o.y / 16 + 1
 
-			if love.keyboard.isDown("w") and o.parent.layer[2].getTile(tx, ty - 0.5) == 0 then
+			if love.keyboard.isDown("w") and o.parent.map.isCollision(tx, ty - 0.5) == false then
 				o.y = o.y - dt * o.speed
 				o.directionAnimation = 0
 				o.moving = true
 				o.direction = math.pi
-			elseif love.keyboard.isDown("s") and o.parent.layer[2].getTile(tx, ty + 0.5) == 0 then
+			elseif love.keyboard.isDown("s") and o.parent.map.isCollision(tx, ty + 0.5) == false then
 				o.y = o.y + dt * o.speed
 				o.directionAnimation = 1
 				o.moving = true
 				o.direction = math.pi * 2
 			end
 
-			if love.keyboard.isDown("a") and o.parent.layer[2].getTile(tx - 0.25, ty) == 0 then
+			if love.keyboard.isDown("a") and o.parent.map.isCollision(tx - 0.25, ty) == false then
 				o.x = o.x - dt * o.speed
 				o.directionAnimation = 2
 				o.moving = true
 				o.direction = math.pi * 1.5
-			elseif love.keyboard.isDown("d") and o.parent.layer[2].getTile(tx + 0.25, ty) == 0 then
+			elseif love.keyboard.isDown("d") and o.parent.map.isCollision(tx + 0.25, ty) == false then
 				o.x = o.x + dt * o.speed
 				o.directionAnimation = 3
 				o.moving = true
