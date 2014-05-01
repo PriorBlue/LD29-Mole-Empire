@@ -6,6 +6,7 @@ function love.game.newItemManager(parent)
 	o.parent = parent
 	o.quadItems = G.newQuad(0, 0, 8, 8, 64, 64)
 	o.imgItems = G.newImage("gfx/items.png")
+	o.imgItemsGlow = G.newImage("gfx/items_glow.png")
 	o.sound = love.audio.newSource("sfx/item.wav", "static")
 	o.itemTypes = nil
 	o.items = nil
@@ -32,7 +33,7 @@ function love.game.newItemManager(parent)
 				if o.itemTypes[itm.type].maxHealth then
 					p.maxHealth = p.maxHealth + o.itemTypes[itm.type].maxHealth
 					p.addHealth(o.itemTypes[itm.type].maxHealth)
-					o.parent.hitManager.addHit(p.x, p.y - 16, "HP+", 63, 255, 0)
+					o.parent.hitManager.addHit(p.x, p.y - 16, "HP+", 255, 0, 63)
 				end
 				if o.itemTypes[itm.type].speed then
 					p.speed = p.speed + o.itemTypes[itm.type].speed
@@ -69,7 +70,14 @@ function love.game.newItemManager(parent)
 
 	o.draw = function(x, y, r, sw, sh, ...)
 		G.setColor(255, 255, 255)
+		love.postshader.setBuffer("glow")
 		G.setBlendMode("alpha")
+		o.imgBatch:setTexture(o.imgItemsGlow)
+		G.draw(o.imgBatch, x, y, 0, sw, sh)
+		love.postshader.setBuffer("render")
+		love.postshader.addEffect("glow")
+		G.setBlendMode("alpha")
+		o.imgBatch:setTexture(o.imgItems)
 		G.draw(o.imgBatch, x, y, 0, sw, sh)
 	end
 

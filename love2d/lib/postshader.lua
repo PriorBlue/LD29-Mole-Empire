@@ -24,6 +24,8 @@ SOFTWARE.
 
 LOVE_POSTSHADER_BUFFER_RENDER = love.graphics.newCanvas()
 LOVE_POSTSHADER_BUFFER_BACK = love.graphics.newCanvas()
+LOVE_POSTSHADER_BUFFER_GLOW = love.graphics.newCanvas()
+LOVE_POSTSHADER_BUFFER_GLOW2 = love.graphics.newCanvas()
 LOVE_POSTSHADER_LAST_BUFFER = nil
 
 LOVE_POSTSHADER_BLURV = love.graphics.newShader("shader/blurv.glsl")
@@ -37,9 +39,12 @@ LOVE_POSTSHADER_TILT_SHIFT = love.graphics.newShader("shader/tilt_shift.glsl")
 
 love.postshader = {}
 
-love.postshader.setBuffer = function(path)
-	if path == "back" then
+love.postshader.setBuffer = function(buffer)
+	if buffer == "back" then
 		love.graphics.setCanvas(LOVE_POSTSHADER_BUFFER_BACK)
+	elseif buffer == "glow" then
+		LOVE_POSTSHADER_BUFFER_GLOW:clear(0,0,0)
+		love.graphics.setCanvas(LOVE_POSTSHADER_BUFFER_GLOW)
 	else
 		love.graphics.setCanvas(LOVE_POSTSHADER_BUFFER_RENDER)
 	end
@@ -50,7 +55,10 @@ love.postshader.addEffect = function(shader, ...)
 	args = {...}
 	LOVE_POSTSHADER_LAST_BUFFER = love.graphics.getCanvas()
 
-	love.graphics.setCanvas(LOVE_POSTSHADER_BUFFER_BACK)
+	love.graphics.setColor(255, 255, 255)
+	if shader ~= "glow" then
+		love.graphics.setCanvas(LOVE_POSTSHADER_BUFFER_BACK)
+	end
 	love.graphics.setBlendMode("alpha")
 
 	if shader == "bloom" then
@@ -89,12 +97,34 @@ love.postshader.addEffect = function(shader, ...)
 
 		love.graphics.setShader(LOVE_POSTSHADER_BLURH)
 		love.graphics.draw(LOVE_POSTSHADER_BUFFER_BACK)
+	elseif shader == "glow" then
+		-- Blur Shader
+		LOVE_POSTSHADER_BLURV:send("screen", {love.window.getWidth(), love.window.getHeight()})
+		LOVE_POSTSHADER_BLURH:send("screen", {love.window.getWidth(), love.window.getHeight()})
+		LOVE_POSTSHADER_BLURV:send("steps", args[1] or 2.0)
+		LOVE_POSTSHADER_BLURH:send("steps", args[2] or 2.0)
+
+		LOVE_POSTSHADER_BUFFER_GLOW2:clear()
+		love.graphics.setCanvas(LOVE_POSTSHADER_BUFFER_GLOW2)
+
+		love.graphics.setBlendMode("additive")
+		love.graphics.setShader(LOVE_POSTSHADER_BLURV)
+		love.graphics.draw(LOVE_POSTSHADER_BUFFER_GLOW)
+
+		love.graphics.setCanvas(LOVE_POSTSHADER_BUFFER_GLOW)
+
+		love.graphics.setShader(LOVE_POSTSHADER_BLURH)
+		love.graphics.draw(LOVE_POSTSHADER_BUFFER_GLOW2)
+
+		love.graphics.setCanvas(LOVE_POSTSHADER_LAST_BUFFER)
+		love.graphics.setShader()
+		love.graphics.setColor(255, 255, 255)
+		love.graphics.draw(LOVE_POSTSHADER_BUFFER_GLOW)
 	elseif shader == "chromatic" then
 		-- Chromatic Shader
 		LOVE_POSTSHADER_CHROMATIC_ABERRATION:send("redStrength", {args[1] or 0.0, args[2] or 0.0})
 		LOVE_POSTSHADER_CHROMATIC_ABERRATION:send("greenStrength", {args[3] or 0.0, args[4] or 0.0})
 		LOVE_POSTSHADER_CHROMATIC_ABERRATION:send("blueStrength", {args[5] or 0.0, args[6] or 0.0})
-		love.graphics.setCanvas(LOVE_POSTSHADER_BUFFER_BACK)
 		love.graphics.setShader(LOVE_POSTSHADER_CHROMATIC_ABERRATION)
 		love.graphics.draw(LOVE_POSTSHADER_BUFFER_RENDER)
 	elseif shader == "4colors" then
@@ -152,7 +182,7 @@ love.postshader.addEffect = function(shader, ...)
 		love.graphics.draw(LOVE_POSTSHADER_BUFFER_BACK)
 	end
 
-	if shader ~= "bloom" then
+	if shader ~= "bloom" and shader ~= "glow" then
 		love.graphics.setBlendMode("alpha")
 		love.graphics.setCanvas(LOVE_POSTSHADER_LAST_BUFFER)
 		love.graphics.setShader()

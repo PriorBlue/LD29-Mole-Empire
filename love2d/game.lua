@@ -33,7 +33,10 @@ function love.game.newGame()
 		o.sound[1]:play()
 		o.sound[2] = love.audio.newSource("sfx/ambient.ogg")
 		o.sound[2]:setLooping(true)
-		o.sound[2]:setVolume(0.25)
+		o.sound[2]:setVolume(0.5)
+		o.sound[3] = love.audio.newSource("sfx/credits.ogg")
+		o.sound[3]:setLooping(true)
+		o.sound[3]:setVolume(0.25)
 	end
 
 	o.update = function(dt)
@@ -60,6 +63,7 @@ function love.game.newGame()
 		o.state = state
 		o.sound[1]:stop()
 		o.sound[2]:stop()
+		o.sound[3]:stop()
 		if o.state == STATE_MAIN_MENU then
 			o.sound[1]:play()
 		elseif o.state == STATE_GAME then
@@ -69,6 +73,8 @@ function love.game.newGame()
 			o.world.init()
 			o.world.enemyManager.ai = false
 			o.world.shadows = false
+		elseif o.state == STATE_CREDITS then
+			o.sound[3]:play()
 		end
 	end
 

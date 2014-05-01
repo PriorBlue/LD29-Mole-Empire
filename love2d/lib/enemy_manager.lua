@@ -36,7 +36,7 @@ function love.game.newEnemyManager(parent)
 				if not e.death then
 					local len = math.length(e.x, e.y, p.x, p.y)
 
-					--if len <= 256 then
+					if len <= 256 then
 						if len <= 64 then
 							e.target = p
 							if len <= 16 and p.attacked <= 0 then
@@ -56,7 +56,7 @@ function love.game.newEnemyManager(parent)
 								--end
 							end
 						end
-					--end
+					end
 				end
 				e.update(dt)
 			end
@@ -163,6 +163,34 @@ function love.game.newEnemyManager(parent)
 		end
 
 		return atkEnemy
+	end
+
+	o.getEnemyCount = function()
+		return #o.enemies
+	end
+
+	o.getEnemyLivingCount = function()
+		local cnt = 0
+
+		for i = 1, #o.enemies do
+			if not o.enemies[i].death then
+				cnt = cnt + 1
+			end
+		end
+
+		return cnt
+	end
+
+	o.getEnemyKillCount = function()
+		local cnt = 0
+
+		for i = 1, #o.enemies do
+			if o.enemies[i].death then
+				cnt = cnt + 1
+			end
+		end
+
+		return cnt
 	end
 
 	return o

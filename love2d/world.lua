@@ -29,6 +29,7 @@ function love.game.newWorld(parent)
 	o.shadows = true
 	o.timer = 0
 	o.timerDeath = 0
+	o.timerWin = 0
 
 	o.zoom = 2
 	o.dragX = 0
@@ -62,7 +63,11 @@ function love.game.newWorld(parent)
 
 		if o.parent.state == STATE_GAME then
 			if o.player.health > 0 then
-				o.player.update(dt)
+				if o.enemyManager.getEnemyKillCount() < o.enemyManager.getEnemyCount() then
+					o.player.update(dt)
+				else
+					o.timerWin = o.timerWin + dt
+				end
 			else
 				o.timerDeath = o.timerDeath + dt
 			end
@@ -257,6 +262,84 @@ function love.game.newWorld(parent)
 					if o.layer[i].getTile(tx + 1, ty + 1) == 19 then
 						o.layer[i].setTile(tx + 1, ty + 1, 18)
 					end
+
+					if o.layer[i].getTile(tx - 1, ty - 1) == 9 then
+						o.layer[i].setTile(tx - 1, ty - 1, 19)
+					end
+					if o.layer[i].getTile(tx + 1, ty - 1) == 8 then
+						o.layer[i].setTile(tx + 1, ty - 1, 19)
+					end
+					if o.layer[i].getTile(tx - 1, ty + 1) == 17 then
+						o.layer[i].setTile(tx - 1, ty + 1, 3)
+					end
+					if o.layer[i].getTile(tx + 1, ty + 1) == 16 then
+						o.layer[i].setTile(tx + 1, ty + 1, 3)
+					end
+
+					if o.layer[i].getTile(tx - 1, ty - 1) == 16 then
+						o.layer[i].setTile(tx - 1, ty - 1, 12)
+					end
+					if o.layer[i].getTile(tx + 1, ty - 1) == 17 then
+						o.layer[i].setTile(tx + 1, ty - 1, 10)
+					end
+					if o.layer[i].getTile(tx - 1, ty + 1) == 8 then
+						o.layer[i].setTile(tx - 1, ty + 1, 12)
+					end
+					if o.layer[i].getTile(tx + 1, ty + 1) == 9 then
+						o.layer[i].setTile(tx + 1, ty + 1, 10)
+					end
+
+					if o.layer[i].getTile(tx - 1, ty - 1) == 2 then
+						o.layer[i].setTile(tx - 1, ty - 1, 1)
+					end
+					if o.layer[i].getTile(tx + 1, ty - 1) == 4 then
+						o.layer[i].setTile(tx + 1, ty - 1, 1)
+					end
+					if o.layer[i].getTile(tx - 1, ty + 1) == 18 then
+						o.layer[i].setTile(tx - 1, ty + 1, 1)
+					end
+					if o.layer[i].getTile(tx + 1, ty + 1) == 20 then
+						o.layer[i].setTile(tx + 1, ty + 1, 1)
+					end
+
+					if o.layer[i].getTile(tx - 1, ty) == 9 then
+						o.layer[i].setTile(tx - 1, ty, 20)
+					end
+					if o.layer[i].getTile(tx - 1, ty) == 17 then
+						o.layer[i].setTile(tx - 1, ty, 4)
+					end
+					if o.layer[i].getTile(tx + 1, ty) == 8 then
+						o.layer[i].setTile(tx + 1, ty, 18)
+					end
+					if o.layer[i].getTile(tx + 1, ty) == 16 then
+						o.layer[i].setTile(tx + 1, ty, 2)
+					end
+
+					if o.layer[i].getTile(tx , ty - 1) == 16 then
+						o.layer[i].setTile(tx, ty - 1, 20)
+					end
+					if o.layer[i].getTile(tx, ty - 1) == 17 then
+						o.layer[i].setTile(tx, ty - 1, 18)
+					end
+					if o.layer[i].getTile(tx, ty + 1) == 8 then
+						o.layer[i].setTile(tx, ty + 1, 4)
+					end
+					if o.layer[i].getTile(tx, ty + 1) == 9 then
+						o.layer[i].setTile(tx, ty + 1, 2)
+					end
+
+					if o.layer[i].getTile(tx , ty - 1) == 2 or o.layer[i].getTile(tx , ty - 1) == 4 then
+						o.layer[i].setTile(tx, ty - 1, 1)
+					end
+					if o.layer[i].getTile(tx, ty + 1) == 18 or o.layer[i].getTile(tx, ty + 1) == 20 then
+						o.layer[i].setTile(tx, ty + 1, 1)
+					end
+					if o.layer[i].getTile(tx - 1, ty) == 2 or o.layer[i].getTile(tx - 1, ty) == 18 then
+						o.layer[i].setTile(tx - 1, ty, 1)
+					end
+					if o.layer[i].getTile(tx + 1, ty) == 4 or o.layer[i].getTile(tx + 1, ty) == 20 then
+						o.layer[i].setTile(tx + 1, ty, 1)
+					end
 				end
 
 				o.layer[i].endDraw()
@@ -312,11 +395,11 @@ function love.game.newWorld(parent)
 
 			o.hud.draw()
 
-			if o.timer < 10 then
-				G.setColor(191, 255, 0, (o.timer % 10) * 25)
+			if o.timer < 5 then
+				G.setColor(191, 255, 0, (o.timer % 5) * 25)
 				G.printf("[QUICK HELP]\nWASD: Move\nSPACE: Attack\nE: Interact", 0, 8, W.getWidth(), "center")
-			elseif o.timer < 20 then
-				G.setColor(255, 191, 0, (o.timer % 10) * 25)
+			elseif o.timer < 10 then
+				G.setColor(255, 191, 0, (o.timer % 5) * 25)
 				G.printf("Kill all enemies, to become the leader of the underworld!", 0, 8, W.getWidth(), "center")
 			end
 
@@ -326,6 +409,12 @@ function love.game.newWorld(parent)
 				G.setColor(255, 63, 0, math.min(o.timerDeath * 100, 255))
 				G.setFont(FONT_NORMAL)
 				G.printf("You are dead!", 0, W.getHeight() * 0.5, W.getWidth(), "center")
+			elseif o.enemyManager.getEnemyKillCount() >= o.enemyManager.getEnemyCount() then
+				G.setColor(0, 0, 0, math.min(o.timerWin * 100, 191))
+				G.rectangle("fill", 0, 0, W.getWidth(), W.getHeight())
+				G.setColor(63, 255, 0, math.min(o.timerWin * 100, 255))
+				G.setFont(FONT_NORMAL)
+				G.printf("Wow, you realy did it!\nYou are now the ruler of this hole.", 0, W.getHeight() * 0.5 - 32, W.getWidth(), "center")
 			end
 		elseif o.parent.state == STATE_EDITOR then
 			G.setFont(FONT_SMALL)

@@ -115,6 +115,7 @@ function love.game.newEnemy(parent, type, x, y)
 		G.draw(o.parent.imgEnemies[o.type], o.parent.quad, (o.x - 16 * 0.5) * sw + x, (o.y - 32 * 0.5) * sh + y, 0, sw, sh)
 
 		if not o.death and o.health < o.maxHealth then
+			-- Healthbar
 			G.setLineWidth(sw)
 			G.setColor(0, 0, 0, 127)
 			G.rectangle("fill", (o.x - 16 * 0.5 - 2) * sw + x, (o.y - 48 * 0.5 - 2) * sh + y, (16 + 4) * sw, (2 + 4) * sh)
@@ -122,6 +123,17 @@ function love.game.newEnemy(parent, type, x, y)
 			G.rectangle("line", (o.x - 16 * 0.5 - 1) * sw + x, (o.y - 48 * 0.5 - 1) * sh + y, (16 + 2) * sw, (2 + 2) * sh)
 			G.setColor((1 - o.health / o.maxHealth) * 255, (o.health / o.maxHealth) * 255, 0)
 			G.rectangle("fill", (o.x - 16 * 0.5) * sw + x, (o.y - 48 * 0.5) * sh + y, (o.health / o.maxHealth) * 16 * sw, 2 * sw)
+
+			if sw > 1.0 then
+				-- Healthpoints
+				if sw == 2.0 then
+					G.setFont(FONT_SMALL)
+				else
+					G.setFont(FONT_NORMAL)
+				end
+				G.setColor(255, 255, 255)
+				G.printf(o.health .. "/" .. o.maxHealth, (o.x - 64 * 0.5) * sw + x, (o.y - 72 * 0.5) * sh + y, 64 * sw, "center")
+			end
 		end
 	end
 

@@ -20,8 +20,12 @@ function love.game.newHitManager(parent)
 
 	o.draw = function(x, y, r, sw, sh, ...)
 		G.setBlendMode("alpha")
-		G.setFont(FONT_NORMAL)
 		for i = 1, #o.hit do
+			if type(o.hit[i].count) == "string" then
+				G.setFont(FONT_SMALL)
+			elseif type(o.hit[i].count) == "number" then
+				G.setFont(FONT_NORMAL)
+			end
 			G.setColor(0, 0, 0)
 			G.printf(o.hit[i].count, (o.hit[i].x * sw + x) - 64 + 1, (o.hit[i].y * sh + y) + 1 - (1 - o.hit[i].time) * 64, 128, "center")
 			G.setColor(o.hit[i].red, o.hit[i].green, o.hit[i].blue, o.hit[i].alpha)

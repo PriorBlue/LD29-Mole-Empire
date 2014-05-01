@@ -57,6 +57,9 @@ function love.game.newPlayer(parent, x, y)
 			-- Attack
 			if o.attack < 100 then
 				o.attack = o.attack + dt * 250
+				if o.attack > 100 then
+					o.attack = 100
+				end
 			elseif love.keyboard.isDown(" ") or love.keyboard.isDown("return") then
 				o.attack = 0
 				o.directionAttack = o.direction

@@ -44,6 +44,8 @@ function love.game.newHud(parent, x, y)
 		G.print("Str " .. o.parent.player.strength, W.getWidth() - 72, W.getHeight() - 72)
 		G.print("Spd " .. o.parent.player.speed, W.getWidth() - 72, W.getHeight() - 52)
 		G.print("Luk " .. o.parent.player.luck, W.getWidth() - 72, W.getHeight() - 32)
+		-- Enemies
+		G.print("Kills: " .. o.parent.enemyManager.getEnemyKillCount() .. "/" .. o.parent.enemyManager.getEnemyCount(), 16, W.getHeight() - 32)
 	end
 
 	return o

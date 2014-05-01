@@ -126,6 +126,35 @@ function love.game.newLayer(parent, width, height, tileset)
 		G.point(x, y)
 	end
 
+	o.setTileBridge = function(x, y, n, frames, event)
+		local coll = false
+		o.curEvent = event or 0
+		for i = 1, #o.coll do
+			if o.coll[i] == n then
+				o.curEvent = 1
+				coll = true
+				break
+			end
+		end
+
+		o.parent.setCollision(x, y, coll)
+		G.setPointStyle("rough")
+		if o.getTile(x - 1, y) == n then
+			if o.getTile(x + 1, y) == n then
+				G.setColor(math.mod(n, o.tileset.grid), math.floor(n / o.tileset.grid), frames or 0, o.curEvent)
+			else
+				G.setColor(2, 1, frames or 0, o.curEvent)
+			end
+		else
+			if o.getTile(x + 1, y) == n then
+				G.setColor(4, 1, frames or 0, o.curEvent)
+			else
+				G.setColor(1, 1, frames or 0, o.curEvent)
+			end
+		end
+		G.point(x, y)
+	end
+
 	o.getTile = function(x, y)
 		local r, g, b, a = o.canvas:getPixel(x, y)
 		return r + g * o.tileset.grid
@@ -202,8 +231,8 @@ function love.game.newMap(width, height)
 			G.draw(img)
 			-- update collision
 			local imgData = img:getData()
-			for k = 1, o.width do
-				for l = 1, o.height do
+			for k = 1, math.min(o.width, imgData:getWidth()) do
+				for l = 1, math.min(o.height, imgData:getHeight()) do
 					local r, g, b, a = imgData:getPixel(k - 1, l - 1)
 					if a > 0 then
 						o.collision[k][l] = true

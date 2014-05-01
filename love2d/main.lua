@@ -1,6 +1,3 @@
-love.graphics.setDefaultFilter("nearest", "nearest", 0)
-love.graphics.setLineStyle("rough")
-
 require "lib/TSerial"
 require "lib/postshader"
 require "game"
@@ -13,6 +10,9 @@ function love.load()
 	T = love.timer
 	FS = love.filesystem
 
+	G.setDefaultFilter("nearest", "nearest", 0)
+	G.setLineStyle("rough")
+
 	FONT_SMALL = G.newFont("font/alagard.ttf", 16)
 	FONT_NORMAL = G.newFont("font/alagard.ttf", 24)
 	FONT_BIG = G.newFont("font/alagard.ttf", 32)
@@ -21,7 +21,7 @@ function love.load()
 	G.setFont(FONT_NORMAL)
 
 	ludGame = love.game.newGame()
-	ludGame.setVersion("0.2.0")
+	ludGame.setVersion("0.3.0")
 	ludGame.init()
 end
 
@@ -34,8 +34,10 @@ function love.draw()
 	love.postshader.setBuffer("render")
 	G.clear(0, 0, 0)
 	ludGame.draw()
+	if ludGame.state == STATE_MAIN_MENU or ludGame.state == STATE_CREDITS then
+		love.postshader.addEffect("scanlines")
+	end
 	love.postshader.addEffect("bloom")
-	--love.postshader.addEffect("scanlines")
 	love.postshader.draw()
 end
 
